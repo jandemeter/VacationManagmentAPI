@@ -5,6 +5,7 @@ import com.assignment.Assignment.entity.Employee;
 import com.assignment.Assignment.entity.Vacation;
 import com.assignment.Assignment.repository.EmployeeRepository;
 import com.assignment.Assignment.repository.VacationRepository;
+import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -26,18 +27,25 @@ public class VacationService {
         return this.vacationRepository.findAll();
     }
 
-    public Optional<Vacation> getVacation(Long id){
+    public Optional<Vacation> getVacation(Long id) throws BadRequestException {
+        if(!vacationRepository.existsById(id)){
+            throw new BadRequestException("Vacation with ID " + id + " not found");
+
+        }
         return this.vacationRepository.findById(id);
     }
 
-    public List<Vacation> getVacationsByEmployeeId(Long employeeId) {
+    public List<Vacation> getVacationsByEmployeeId(Long employeeId) throws BadRequestException {
+        if(!employeeRepository.existsById(employeeId)){
+            throw new BadRequestException("Employee with ID" + employeeId + "not found");
+        }
         return vacationRepository.findByCreatedBy_Id(employeeId);
     }
 
-    public Vacation saveVacation(VacationRequest request){
+    public Vacation saveVacation(VacationRequest request) throws BadRequestException {
 
         Employee createdBy = employeeRepository.findById(request.getCreatedById())
-                .orElseThrow(() -> new RuntimeException("Employee not found"));
+                .orElseThrow(() -> new BadRequestException("Employee with ID" + request.getCreatedById() + "not found"));
 
         Vacation vacation = new Vacation();
         Long dateDuration = ChronoUnit.DAYS.between(request.getFromDate(), request.getToDate());
@@ -54,7 +62,11 @@ public class VacationService {
         return vacationRepository.save(vacation);
     }
 
-    public void deleteVacation(Long id){
+    public String deleteVacation(Long id) throws BadRequestException {
+        if(!vacationRepository.existsById(id)){
+            throw new BadRequestException("Vacation with ID " + id + " not found");
+        }
         this.vacationRepository.deleteById(id);
+        return "deleted";
     }
 }

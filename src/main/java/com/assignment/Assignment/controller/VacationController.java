@@ -3,13 +3,16 @@ package com.assignment.Assignment.controller;
 import com.assignment.Assignment.controller.Request.VacationRequest;
 import com.assignment.Assignment.entity.Vacation;
 import com.assignment.Assignment.service.VacationService;
+import jakarta.validation.Valid;
+import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
 
+@Validated
 @RestController
 @RequestMapping("/vacation")
 public class VacationController {
@@ -18,35 +21,27 @@ public class VacationController {
     VacationService vacationService;
 
     @GetMapping
-    public ResponseEntity<List<Vacation>> getVacations(){
-        List<Vacation> vacations = this.vacationService.getAllVacations();
-        return ResponseEntity.ok(vacations);
+    public List<Vacation> getVacations(){
+        return this.vacationService.getAllVacations();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Vacation> getVacation(@PathVariable("id") Long vacationId){
-        Optional<Vacation> vacation = this.vacationService.getVacation(vacationId);
-        return vacation.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    public Optional<Vacation> getVacation(@PathVariable("id") Long vacationId) throws BadRequestException {
+        return this.vacationService.getVacation(vacationId);
     }
 
     @GetMapping("/employee/{employeeId}")
-    public ResponseEntity<List<Vacation>> getVacationsByEmployeeId(@PathVariable Long employeeId) {
-        List<Vacation> vacations = vacationService.getVacationsByEmployeeId(employeeId);
-        if (vacations.isEmpty()) {
-            return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.ok(vacations);
+    public List<Vacation> getVacationsByEmployeeId(@PathVariable Long employeeId) throws BadRequestException {
+        return this.vacationService.getVacationsByEmployeeId(employeeId);
     }
 
     @PostMapping
-    public ResponseEntity<Vacation> saveVacation(@RequestBody VacationRequest vacationRequest){
-        Vacation newVacation = this.vacationService.saveVacation(vacationRequest);
-        return ResponseEntity.ok(newVacation);
+    public Vacation saveVacation(@RequestBody @Valid VacationRequest vacationRequest) throws BadRequestException {
+        return this.vacationService.saveVacation(vacationRequest);
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteVacation(@PathVariable("id") Long vacationId){
-        vacationService.deleteVacation(vacationId);
-        return ResponseEntity.ok("Vacation deleted successfully");
+    @PostMapping("/{id}")
+    public String deleteVacation(@PathVariable("id") Long vacationId) throws BadRequestException {
+        return this.vacationService.deleteVacation(vacationId);
     }
 }

@@ -3,12 +3,16 @@ package com.assignment.Assignment.controller;
 import com.assignment.Assignment.controller.Request.EmployeeRequest;
 import com.assignment.Assignment.entity.Employee;
 import com.assignment.Assignment.service.EmployeeService;
+import jakarta.validation.Valid;
+import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
 
 import java.util.List;
 
+@Validated
 @RestController
 @RequestMapping("/employee")
 public class EmployeeController {
@@ -17,14 +21,14 @@ public class EmployeeController {
     EmployeeService employeeService;
 
     @GetMapping
-    public ResponseEntity<List<Employee>> getAllEmployees() {
-        List<Employee> employees = this.employeeService.getAllEmployees();
-        return ResponseEntity.ok(employees);
+    @ResponseBody
+    public List<Employee> getAllEmployees() {
+        return this.employeeService.getAllEmployees();
     }
 
     @PostMapping
-    public ResponseEntity<Employee> saveEmployee(@RequestBody EmployeeRequest employeeRequest){
-        Employee newEmployee = this.employeeService.saveEmployee(employeeRequest);
-        return ResponseEntity.ok(newEmployee);
+    @ResponseBody
+    public Employee saveEmployee(@RequestBody @Valid EmployeeRequest employeeRequest) throws BadRequestException {
+        return this.employeeService.saveEmployee(employeeRequest);
     }
 }

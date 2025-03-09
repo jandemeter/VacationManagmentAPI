@@ -5,6 +5,7 @@ import com.assignment.Assignment.entity.Employee;
 import com.assignment.Assignment.entity.Team;
 import com.assignment.Assignment.repository.EmployeeRepository;
 import com.assignment.Assignment.repository.TeamRepository;
+import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -23,14 +24,17 @@ public class EmployeeService {
         return this.employeeRepository.findAll();
     }
 
-    public List<Employee> getTeamEmployees(Long teamId) {
+    public List<Employee> getTeamEmployees(Long teamId) throws BadRequestException {
+        if (!teamRepository.existsById(teamId)) {
+            throw new BadRequestException("Team with ID " + teamId + " not found");
+        }
         return this.employeeRepository.findByTeamId(teamId);
     }
 
-    public Employee saveEmployee(EmployeeRequest request){
+    public Employee saveEmployee(EmployeeRequest request) throws BadRequestException {
 
         Team team = teamRepository.findById(request.getTeamId())
-                .orElseThrow(() -> new RuntimeException("Employee not found"));
+                .orElseThrow(() -> new BadRequestException("Employee not found"));
 
         Employee employee = new Employee();
 
